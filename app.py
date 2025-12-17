@@ -2,7 +2,11 @@ import streamlit as st
 import google.generativeai as genai
 
 # --- CONFIGURATION ---
-st.set_page_config(page_title="O Level Physics Assistant", page_icon="🔭")
+st.set_page_config(
+    page_title="O-Level Physics Tutor", 
+    page_icon="🔭",
+    initial_sidebar_state="expanded"
+)
 
 # --- API KEY SETUP ---
 # Securely retrieve key from Streamlit Secrets
@@ -49,4 +53,5 @@ if prompt := st.chat_input("Type your question here..."):
     # Show AI response
     with st.chat_message("assistant"):
         st.markdown(response.text)
+
     st.session_state.messages.append({"role": "assistant", "content": response.text})
