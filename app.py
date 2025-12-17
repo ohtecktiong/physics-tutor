@@ -3,7 +3,11 @@ import google.generativeai as genai
 from PIL import Image
 
 # --- CONFIGURATION ---
-st.set_page_config(page_title="O-Level Physics Tutor", page_icon="🔭")
+st.set_page_config(
+    page_title="O-Level Physics Tutor", 
+    page_icon="🔭",
+    initial_sidebar_state="expanded"
+)
 
 # --- SECRETS SETUP ---
 # This grabs the key from the cloud secrets (or local secrets.toml if testing locally)
@@ -113,3 +117,4 @@ if prompt := st.chat_input("Type your question here..."):
                 st.markdown(response.text)
         
         st.session_state.messages.append({"role": "assistant", "content": response.text})
+
