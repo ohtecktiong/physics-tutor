@@ -6,8 +6,8 @@ from PIL import Image
 # 1. PAGE CONFIGURATION
 # ==========================================
 st.set_page_config(
-    page_title="O-Level Physics Tutor", 
-    page_icon="🔭",
+    page_title="O-Physics Buddy", 
+    page_icon="💻",
     initial_sidebar_state="expanded"
 )
 
@@ -64,7 +64,7 @@ model = genai.GenerativeModel("gemini-flash-latest", system_instruction=system_i
 # ==========================================
 # 6. VISUAL LAYOUT
 # ==========================================
-st.title("🔭 O-Level Physics AI Tutor")
+st.title("💻 O-Physics Buddy")
 st.caption("Ask me about Kinematics, Forces, Lenses, or Electricity!")
 
 with st.sidebar:
@@ -146,4 +146,5 @@ if prompt := st.chat_input("Type your question here..."):
                 st.markdown(response.text)
         
         st.session_state.messages.append({"role": "assistant", "content": response.text})
+
 
