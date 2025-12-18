@@ -10,7 +10,7 @@ from PIL import Image
 # ==========================================
 st.set_page_config(
     page_title="O-Level Physics Tutor", 
-    page_icon="🔭",
+    page_icon="💻",
     initial_sidebar_state="expanded"
 )
 
@@ -149,3 +149,4 @@ if prompt := st.chat_input("Type your question here..."):
         
         # 4. Save AI response
         st.session_state.messages.append({"role": "assistant", "content": response.text})
+
