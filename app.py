@@ -78,7 +78,7 @@ model = genai.GenerativeModel("gemini-flash-latest", system_instruction=system_i
 # This draws the text and buttons on the screen.
 # ==========================================
 st.title("🔭 O-Level Physics AI Tutor")
-st.caption("Ask me about Kinematics, Forces, Lenses, or Electricity!")
+st.caption("Need help with O-Level Physics? Just drop your questions here and we will work through them!")
 
 # The Sidebar (The menu on the left)
 with st.sidebar:
@@ -149,4 +149,5 @@ if prompt := st.chat_input("Type your question here..."):
         
         # 4. Save AI response
         st.session_state.messages.append({"role": "assistant", "content": response.text})
+
 
