@@ -2,27 +2,37 @@ import streamlit as st
 import google.generativeai as genai
 from PIL import Image
 
-# --- CONFIGURATION ---
+# ==========================================
+# 1. PAGE CONFIGURATION
+# This sets up the web browser tab title and icon.
+# "initial_sidebar_state='expanded'" forces the side menu to stay open 
+# so students don't miss the upload button.
+# ==========================================
 st.set_page_config(
     page_title="O-Level Physics Tutor", 
     page_icon="🔭",
     initial_sidebar_state="expanded"
 )
 
-# --- SECRETS SETUP ---
-# This grabs the key from the cloud secrets (or local secrets.toml if testing locally)
+# ==========================================
+# 2. SECURITY & API SETUP
+# This connects your code to the Google AI Brain.
+# It checks if you are on the Cloud (st.secrets) or testing locally.
+# ==========================================
 if "GEMINI_API_KEY" in st.secrets:
     api_key = st.secrets["GEMINI_API_KEY"]
 else:
-    # Fallback for local testing if you haven't set up secrets.toml
-    # You can paste your key here temporarily for local testing, 
-    # but remove it before uploading to GitHub!
+    # ⚠️ SAFETY WARNING: Only use this for testing on your laptop. 
+    # Remove the key below before uploading to GitHub!
     api_key = "YOUR_API_KEY_FOR_LOCAL_TESTING" 
 
 genai.configure(api_key=api_key)
 
-# --- DATABASE: OFFICIAL DEFINITIONS ---
-# Add your exact definitions here. The AI will strictly refer to this.
+# ==========================================
+# 3. KNOWLEDGE BASE (CUSTOMISABLE)
+# ✅ ACTION FOR MR TAN: Add new definitions to this list below.
+# The AI will strictly use these words when asked "Define X".
+# ==========================================
 OFFICIAL_DEFINITIONS = """
 1. Speed: Distance moved per unit time.
 2. Velocity: Rate of change of displacement.
@@ -36,7 +46,11 @@ OFFICIAL_DEFINITIONS = """
 10. Pressure: Force acting per unit area.
 """
 
-# --- TEACHER BRAIN (System Instructions) ---
+# ==========================================
+# 4. THE "TEACHER BRAIN" (SYSTEM INSTRUCTIONS)
+# ✅ ACTION FOR MR TAN: This is where you set the rules of the classroom.
+# You can edit the values for 'g', speed of light, or add new pedagogical rules here.
+# ==========================================
 system_instruction = f"""
 You are a supportive O-Level Physics tutor (Singapore).
 
@@ -50,71 +64,88 @@ You have access to the following OFFICIAL DEFINITIONS. If a student asks for a d
 3. Unit Formatting: Use m/s, m/s^2 (NO negative indices like ms^-1).
 4. EMI Phrase: Must use "change in number of magnetic field lines going through a coil with time".
 5. Field Lines: Remind student to draw sufficient lines to show symmetry.
-6. Scaffolding: Never give the answer immediately. Use hints.
+6. Scaffolding: Never give the answer immediately. Use hints and Socratic questioning.
 """
 
-# Use the best available free model
-# "gemini-flash-latest" points to the newest stable version (currently 1.5 Flash)
+# ==========================================
+# 5. AI MODEL SELECTION
+# We use "gemini-flash-latest" so it always points to the best fast model (currently 1.5).
+# ==========================================
 model = genai.GenerativeModel("gemini-flash-latest", system_instruction=system_instruction)
 
-# --- WEBSITE LAYOUT ---
+# ==========================================
+# 6. VISUAL LAYOUT (TITLE & SIDEBAR)
+# This draws the text and buttons on the screen.
+# ==========================================
 st.title("🔭 O-Level Physics AI Tutor")
 st.caption("Ask me about Kinematics, Forces, Lenses, or Electricity!")
 
-# --- SIDEBAR (Image Handling) ---
+# The Sidebar (The menu on the left)
 with st.sidebar:
     st.header("📸 Upload Question")
     st.info("💡 **Tip:** Click the box below and press **Ctrl+V** to paste an image!")
+    # The file uploader widget
     uploaded_file = st.file_uploader("Upload or Paste Screenshot", type=["png", "jpg", "jpeg"])
 
-# --- CHAT HISTORY ---
+# ==========================================
+# 7. CHAT HISTORY (MEMORY)
+# This ensures the bot remembers the conversation as long as the browser is open.
+# ==========================================
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Display history
+# Loop through history and display previous messages on the screen
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
-        # Check if the content is a tuple (text, image) or just text
+        # Check if the message contains an image
         if isinstance(message["content"], list): 
-             # It's an image block [prompt, image_data]
-             st.markdown(message["content"][0]) # Show the text prompt
-             st.image(message["content"][1], width=300) # Show the image
+             # Display Text + Image
+             st.markdown(message["content"][0]) 
+             st.image(message["content"][1], width=300)
         else:
+            # Display Text only
             st.markdown(message["content"])
 
-# --- CHAT INPUT & LOGIC ---
+# ==========================================
+# 8. MAIN LOGIC LOOP
+# This waits for the student to type something in the chat box.
+# ==========================================
 if prompt := st.chat_input("Type your question here..."):
     
-    # CASE 1: Image + Text
+    # --- SCENARIO A: Student uploaded an image ---
     if uploaded_file:
         image = Image.open(uploaded_file)
         
-        # Display user message immediately
+        # 1. Show student's message & image on screen
         st.chat_message("user").markdown(prompt)
         st.chat_message("user").image(image, width=300)
         
-        # Save to history (We store text and image object)
+        # 2. Save to history
         st.session_state.messages.append({"role": "user", "content": [prompt, image]})
         
+        # 3. Ask AI (Send both text + image)
         with st.chat_message("assistant"):
             with st.spinner("Analyzing circuit/diagram..."):
                 response = model.generate_content([prompt, image])
                 st.markdown(response.text)
         
+        # 4. Save AI response to history
         st.session_state.messages.append({"role": "assistant", "content": response.text})
 
-    # CASE 2: Text Only
+    # --- SCENARIO B: Text question only ---
     else:
+        # 1. Show student's message
         st.chat_message("user").markdown(prompt)
         st.session_state.messages.append({"role": "user", "content": prompt})
 
-        # Start a chat session (without history for now to keep it simple/fast)
+        # 2. Create a chat session
         chat = model.start_chat(history=[])
         
+        # 3. Ask AI
         with st.chat_message("assistant"):
             with st.spinner("Thinking..."):
                 response = chat.send_message(prompt)
                 st.markdown(response.text)
         
+        # 4. Save AI response
         st.session_state.messages.append({"role": "assistant", "content": response.text})
-
