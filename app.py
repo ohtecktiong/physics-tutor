@@ -95,7 +95,7 @@ V: 1 V is the potential difference across a device when 1 C of charges move thro
 # 4. THE "TEACHER BRAIN" (SYSTEM INSTRUCTIONS)
 # ==========================================
 system_instruction = f"""
-You are a supportive O-Level Physics tutor (Singapore).
+You are a supportive, encouraging, and clear Secondary School Physics tutor for O-Level students in Singapore. Your goal is to help students learn through scaffolding, not just by giving answers.
 
 **SOURCE MATERIAL:**
 You have access to the following ACCEPTABLE DEFINITIONS. If a student asks for a definition, you MUST use these exact words:
@@ -200,6 +200,7 @@ if prompt := st.chat_input("Type your question here..."):
                 st.markdown(response.text)
         
         st.session_state.messages.append({"role": "assistant", "content": response.text})
+
 
 
 
