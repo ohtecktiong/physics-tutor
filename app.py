@@ -68,6 +68,16 @@ st.title("🔭 O-Level Physics AI Tutor")
 st.caption("Ask me about Kinematics, Forces, Lenses, or Electricity!")
 
 with st.sidebar:
+    st.header("⚙️ Settings")
+    
+    # 1. The Reset Button
+    if st.button("🔄 Reset Conversation"):
+        st.session_state.messages = []
+        st.rerun()
+    
+    st.divider()
+    
+    # 2. The Upload Box
     st.header("📸 Upload Question")
     st.info("💡 **Tip:** Click the box below and press **Ctrl+V** to paste an image!")
     uploaded_file = st.file_uploader("Upload or Paste Screenshot", type=["png", "jpg", "jpeg"])
@@ -136,3 +146,4 @@ if prompt := st.chat_input("Type your question here..."):
                 st.markdown(response.text)
         
         st.session_state.messages.append({"role": "assistant", "content": response.text})
+
