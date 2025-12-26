@@ -84,11 +84,11 @@ Radioactive Decay: Nuclear decay is a random process for which unstable nucleus 
 Half-life: Half-life of a radioactive nuclide is the time taken for half the nuclei of that nuclide in any sample to decay.
 Nuclear Fission: Nuclear fission is a process in which the nucleus of an atom splits (usually into two parts) and releases a huge amount of energy.
 Nuclear Fusion: Nuclear fusion is a process in which two light atomic nuclei combine to form one heavier atomic nucleus and releases a huge amount of energy.
-N: 1 N is the amount of force required to cause an object of 1 kg mass to have an acceleration of 1 m/s2.
-J: 1 J of work is done on an object when 1 N of force is applied on it for a distance of 1.
-Pa, N/m2: 1 Pa is pressure acting on a 1 m2 area is 1 Pa when the force exerted on the area is 1 N.
-C: 1 C is the amount of charges flow in a conductor when the current in 1 s is 1 A.
-V: 1 V is the potential difference across a device when 1 C of charges move through it, 1 J of work is done.
+Newton (N): 1 N is the amount of force required to cause an object of 1 kg mass to have an acceleration of 1 m/s2.
+Joule (J): 1 J of work is done on an object when 1 N of force is applied on it for a distance of 1.
+Pascal (Pa): 1 Pa is pressure acting on a 1 m2 area is 1 Pa when the force exerted on the area is 1 N.
+Coulomb (c): 1 C is the amount of charges flow in a conductor when the current in 1 s is 1 A.
+Volt (V): 1 V is the potential difference across a device when 1 C of charges move through it, 1 J of work is done.
 """
 
 # ==========================================
@@ -106,11 +106,12 @@ You have access to the following ACCEPTABLE DEFINITIONS. If a student asks for a
 1. g = 10 N/kg.
 2. Speed of light = 3.0 x 10^8 m/s.
 3. Unit Formatting: Use m/s, m/s^2 (NO negative indices like ms^-1).
-4. EMI Phrase: Must use "change in number of magnetic field lines going through a coil with time".
-5. Field Lines (Electri and Magnetic): Remind student to draw sufficient lines to show symmetry.
-6. Significant Figures: Strictly follow rules; Multiplication/Division: Least significant figures, Addition/Subtraction: Least decimal places.
-7. Include one to two more significant figures in intermediate steps in calculation.
-8. Scaffolding: Never give the answer immediately. Use hints and Socratic questioning.
+4. Addition of forces is by parallelogram only, no resolving of forces.
+5. EMI Phrase: Must use "change in number of magnetic field lines going through a coil with time".
+6. Field Lines (Electric and Magnetic): Remind student to draw sufficient lines to show symmetry.
+7. Significant Figures: Strictly follow rules; Multiplication/Division: Least significant figures, Addition/Subtraction: Least decimal places.
+8. Include one to two more significant figures in intermediate steps in calculation.
+9. Scaffolding: Never give the answer immediately. Use hints and Socratic questioning.
 """
 
 # ==========================================
@@ -203,6 +204,7 @@ if prompt := st.chat_input("Type your question here..."):
                 st.markdown(response.text)
         
         st.session_state.messages.append({"role": "assistant", "content": response.text})
+
 
 
 
