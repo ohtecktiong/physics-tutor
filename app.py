@@ -123,7 +123,7 @@ model = genai.GenerativeModel("gemini-flash-latest", system_instruction=system_i
 # 6. VISUAL LAYOUT
 # ==========================================
 st.title("💻 O-Physics Buddy")
-st.caption("I am here to partner you in your learning of Physics!")
+st.caption("I am here to partner you in your learning of O-Level Pure Physics!")
 
 with st.sidebar:
     st.header("⚙️ Settings")
@@ -204,6 +204,7 @@ if prompt := st.chat_input("Type your question here..."):
                 st.markdown(response.text)
         
         st.session_state.messages.append({"role": "assistant", "content": response.text})
+
 
 
 
