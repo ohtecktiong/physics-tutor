@@ -7,7 +7,7 @@ from PIL import Image
 # ==========================================
 st.set_page_config(
     page_title="O-Physics Buddy", 
-    page_icon="💻📱🏋️",
+    page_icon="📱🏋️💻",
     initial_sidebar_state="expanded"
 )
 
@@ -204,6 +204,7 @@ if prompt := st.chat_input("Type your question here..."):
                 st.markdown(response.text)
         
         st.session_state.messages.append({"role": "assistant", "content": response.text})
+
 
 
 
