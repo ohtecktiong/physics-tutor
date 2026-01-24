@@ -125,6 +125,10 @@ model = genai.GenerativeModel("gemini-flash-latest", system_instruction=system_i
 st.title("🏋️ O-Level Physics Buddy")
 st.caption("I am here to partner you in your learning of O-Level Pure Physics!")
 
+# Initialize the key for the file uploader if it doesn't exist
+if "uploader_key" not in st.session_state:
+    st.session_state.uploader_key = 0
+
 with st.sidebar:
     st.header("⚙️ Settings")
     
@@ -138,7 +142,13 @@ with st.sidebar:
     # 2. The Upload Box
     st.header("📸 Upload Question")
     st.info("💡 **Tip:** Click the box below and press **Ctrl+V** to paste an image!")
-    uploaded_file = st.file_uploader("Upload or Paste Screenshot", type=["png", "jpg", "jpeg"])
+    
+    # We use the key from session state. changing this key later will clear the box.
+    uploaded_file = st.file_uploader(
+        "Upload or Paste Screenshot", 
+        type=["png", "jpg", "jpeg"], 
+        key=st.session_state.uploader_key
+    )
 
 # ==========================================
 # 7. CHAT HISTORY (MEMORY)
@@ -176,20 +186,23 @@ if prompt := st.chat_input("Type your question here..."):
         
         st.session_state.messages.append({"role": "assistant", "content": response.text})
 
-    # --- SCENARIO B: Text question only (FIXED MEMORY) ---
+        # --- THE FIX: AUTO-CLEAR UPLOADER ---
+        # Increment the key to reset the uploader widget for the next turn
+        st.session_state.uploader_key += 1
+        # Rerun to update the UI (clear the box)
+        st.rerun()
+
+    # --- SCENARIO B: Text question only ---
     else:
         st.chat_message("user").markdown(prompt)
         st.session_state.messages.append({"role": "user", "content": prompt})
 
-        # --- THE FIX: BUILD HISTORY FOR AI ---
-        # We translate the Streamlit history into Gemini history so it "remembers"
+        # Build history for AI (The Memory Fix)
         history_for_ai = []
         for msg in st.session_state.messages:
-            # Map "assistant" (Streamlit) to "model" (Gemini)
             role = "user" if msg["role"] == "user" else "model"
             
-            # If the previous message was an image, we just grab the text part 
-            # so the AI remembers the CONTEXT, even if it can't "see" the image again.
+            # Extract text from previous image messages for context
             if isinstance(msg["content"], list):
                 history_for_ai.append({"role": role, "parts": [msg["content"][0]]})
             else:
@@ -204,15 +217,3 @@ if prompt := st.chat_input("Type your question here..."):
                 st.markdown(response.text)
         
         st.session_state.messages.append({"role": "assistant", "content": response.text})
-
-
-
-
-
-
-
-
-
-
-
-
