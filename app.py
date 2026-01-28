@@ -1,6 +1,8 @@
 import streamlit as st
 import google.generativeai as genai
+from google.api_core.exceptions import ResourceExhausted
 from PIL import Image
+import time
 
 # ==========================================
 # 1. PAGE CONFIGURATION
@@ -125,25 +127,17 @@ model = genai.GenerativeModel("gemini-flash-latest", system_instruction=system_i
 st.title("🏋️ O-Level Physics Buddy")
 st.caption("I am here to partner you in your learning of O-Level Pure Physics!")
 
-# Initialize the key for the file uploader if it doesn't exist
 if "uploader_key" not in st.session_state:
     st.session_state.uploader_key = 0
 
 with st.sidebar:
     st.header("⚙️ Settings")
-    
-    # 1. The Reset Button
     if st.button("🔄 Reset Conversation"):
         st.session_state.messages = []
         st.rerun()
-    
     st.divider()
-    
-    # 2. The Upload Box
     st.header("📸 Upload Question")
     st.info("💡 **Tip:** Click the box below and press **Ctrl+V** to paste an image!")
-    
-    # We use the key from session state. changing this key later will clear the box.
     uploaded_file = st.file_uploader(
         "Upload or Paste Screenshot", 
         type=["png", "jpg", "jpeg"], 
@@ -151,12 +145,11 @@ with st.sidebar:
     )
 
 # ==========================================
-# 7. CHAT HISTORY (MEMORY)
+# 7. CHAT HISTORY
 # ==========================================
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Display history on screen
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         if isinstance(message["content"], list): 
@@ -166,54 +159,69 @@ for message in st.session_state.messages:
             st.markdown(message["content"])
 
 # ==========================================
-# 8. MAIN LOGIC LOOP
+# 8. MAIN LOGIC LOOP (With Rate Limit Fix)
 # ==========================================
 if prompt := st.chat_input("Type your question here..."):
     
-    # --- SCENARIO A: Student uploaded an image ---
+    # Define a helper to generate content safely
+    def generate_response_safe(model_func, *args, **kwargs):
+        try:
+            return model_func(*args, **kwargs)
+        except ResourceExhausted:
+            st.warning("🚦 High Traffic: The AI is busy! Retrying in 5 seconds...")
+            time.sleep(5)
+            try:
+                # Try one more time after waiting
+                return model_func(*args, **kwargs)
+            except ResourceExhausted:
+                # If it fails twice, apologize
+                return None
+
+    # --- SCENARIO A: Image + Text ---
     if uploaded_file:
         image = Image.open(uploaded_file)
         
         st.chat_message("user").markdown(prompt)
         st.chat_message("user").image(image, width=300)
-        
         st.session_state.messages.append({"role": "user", "content": [prompt, image]})
         
         with st.chat_message("assistant"):
             with st.spinner("Analyzing circuit/diagram..."):
-                response = model.generate_content([prompt, image])
-                st.markdown(response.text)
-        
-        st.session_state.messages.append({"role": "assistant", "content": response.text})
+                # Use the safe function
+                response = generate_response_safe(model.generate_content, [prompt, image])
+                
+                if response:
+                    st.markdown(response.text)
+                    st.session_state.messages.append({"role": "assistant", "content": response.text})
+                else:
+                    st.error("⚠️ The class is using the bot too fast! Please wait 1 minute and try again.")
 
-        # --- THE FIX: AUTO-CLEAR UPLOADER ---
-        # Increment the key to reset the uploader widget for the next turn
         st.session_state.uploader_key += 1
-        # Rerun to update the UI (clear the box)
         st.rerun()
 
-    # --- SCENARIO B: Text question only ---
+    # --- SCENARIO B: Text Only ---
     else:
         st.chat_message("user").markdown(prompt)
         st.session_state.messages.append({"role": "user", "content": prompt})
 
-        # Build history for AI (The Memory Fix)
+        # Build history for AI
         history_for_ai = []
         for msg in st.session_state.messages:
             role = "user" if msg["role"] == "user" else "model"
-            
-            # Extract text from previous image messages for context
             if isinstance(msg["content"], list):
                 history_for_ai.append({"role": role, "parts": [msg["content"][0]]})
             else:
                 history_for_ai.append({"role": role, "parts": [msg["content"]]})
 
-        # Start the chat with the FULL history
         chat = model.start_chat(history=history_for_ai)
         
         with st.chat_message("assistant"):
             with st.spinner("Thinking..."):
-                response = chat.send_message(prompt)
-                st.markdown(response.text)
-        
-        st.session_state.messages.append({"role": "assistant", "content": response.text})
+                # Use the safe function
+                response = generate_response_safe(chat.send_message, prompt)
+                
+                if response:
+                    st.markdown(response.text)
+                    st.session_state.messages.append({"role": "assistant", "content": response.text})
+                else:
+                    st.error("⚠️ The class is using the bot too fast! Please wait 1 minute and try again.")
